@@ -11,5 +11,3 @@ struct Fact: Decodable {
     let number: Int
     let type, date: String?
 }
-
-

@@ -11,12 +11,12 @@ class ViewController: UIViewController {
     @IBOutlet var numberTFOutlet: UITextField!
     @IBOutlet var factTFOutlet: UILabel!
     @IBOutlet var selectedNumberLabelOutlet: UILabel!
-    
+
     var facts: Fact!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         NetworkManager.shared.getFact(typeRequest: .general, typeFactRequest: nil, number: "50") { fact in
             self.facts = fact
             DispatchQueue.main.async {
@@ -32,13 +32,13 @@ class ViewController: UIViewController {
                       message: "Enter the number")
             return
         }
-        
+
         guard let _ = Int(number) else {
             showAlert(title: "Oooooops!😱",
                       message: "Алексей это не число")
             return
         }
-        
+
         NetworkManager.shared.getFact(typeRequest: .general, typeFactRequest: nil, number: number) { fact in
             self.facts = fact
             DispatchQueue.main.async {
