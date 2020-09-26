@@ -6,56 +6,55 @@
 //
 import Foundation
 
-enum TypeRequest: String {
-    case random
-    case general
+enum TypeRequest {
+    case random(typeFactRequest: TypeFactRequest)
+    case general(number: String)
 }
 
-enum TypeFactRequest: String {
-    case trivia = "/trivia"
-    case math = "/math"
-    case year = "/year"
+enum TypeFactRequest {
+    case trivia
+    case math
+    case year
 }
 
 class NetworkManager {
+    
     static let shared = NetworkManager()
 
-    func getFact(typeRequest: TypeRequest, typeFactRequest: TypeFactRequest?, number: String?, completion: @escaping (Fact) -> Void) {
-        let api = "http://numbersapi.com/"
-        let endpoint = "?json"
+    var onCompletion: ((Fact) -> Void)?
 
-        if typeRequest == .general {
-            guard let number = number else { return }
-
-            let fullURL = api + number + endpoint
-
-            guard let factURL = URL(string: fullURL) else { return }
-            URLSession.shared.dataTask(with: factURL) { data, _, error in
-                guard let data = data else { return }
-                let jsonDecorer = JSONDecoder()
-                do {
-                    let fact = try jsonDecorer.decode(Fact.self, from: data)
-                    completion(fact)
-                } catch {
-                    print(error)
-                }
-            }.resume()
-        } else {
-            let randomParametr = TypeRequest.random.rawValue
-            guard let querry = typeFactRequest?.rawValue else { return }
-            let fullURL = api + randomParametr + querry + endpoint
-
-            guard let factURL = URL(string: fullURL) else { return }
-            URLSession.shared.dataTask(with: factURL) { data, _, error in
-                guard let data = data else { return }
-                let jsonDecorer = JSONDecoder()
-                do {
-                    let fact = try jsonDecorer.decode(Fact.self, from: data)
-                    completion(fact)
-                } catch {
-                    print(error)
-                }
-            }.resume()
+    func getFact(typeRequest: TypeRequest) {
+        var stringURL = ""
+        
+        switch typeRequest {
+        case .random(let typeFactRequest):
+            stringURL = "http://numbersapi.com/random/\(typeFactRequest)?json"
+        
+        case .general(let number):
+            stringURL = "http://numbersapi.com/\(number)?json"
         }
+        fetchData(stringURL)
+    }
+
+    fileprivate func fetchData(_ stringURL: String) {
+        guard let url = URL(string: stringURL) else { return }
+        let session = URLSession(configuration: .default)
+        let task = session.dataTask(with: url) { data, _, _ in
+            guard let data = data else { return }
+            guard let fact = self.parseJSON(from: data) else { return }
+            self.onCompletion?(fact)
+        }
+        task.resume()
+    }
+
+    fileprivate func parseJSON(from data: Data) -> Fact? {
+        let jsonDecorer = JSONDecoder()
+        do {
+            let fact = try jsonDecorer.decode(Fact.self, from: data)
+            return fact
+        } catch let error as NSError {
+            print(error.localizedDescription)
+        }
+        return nil
     }
 }

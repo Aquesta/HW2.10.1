@@ -12,17 +12,14 @@ class ViewController: UIViewController {
     @IBOutlet var factTFOutlet: UILabel!
     @IBOutlet var selectedNumberLabelOutlet: UILabel!
 
-    var facts: Fact!
+//    var facts: Fact!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        NetworkManager.shared.getFact(typeRequest: .general, typeFactRequest: nil, number: "50") { fact in
-            self.facts = fact
-            DispatchQueue.main.async {
-                self.selectedNumberLabelOutlet.text = String(self.facts.number)
-                self.factTFOutlet.text = self.facts.text
-            }
+        NetworkManagerAF.shared.getFact(typeRequest: .general(number: "45"))
+        NetworkManagerAF.shared.onCompletion = { fact in
+            self.updateUI(fact: fact)
         }
     }
 
@@ -32,49 +29,43 @@ class ViewController: UIViewController {
                       message: "Enter the number")
             return
         }
-
         guard let _ = Int(number) else {
             showAlert(title: "Oooooops!😱",
                       message: "Алексей это не число")
             return
         }
 
-        NetworkManager.shared.getFact(typeRequest: .general, typeFactRequest: nil, number: number) { fact in
-            self.facts = fact
-            DispatchQueue.main.async {
-                self.selectedNumberLabelOutlet.text = String(self.facts.number)
-                self.factTFOutlet.text = self.facts.text
-            }
+        NetworkManagerAF.shared.getFact(typeRequest: .general(number: number))
+        NetworkManagerAF.shared.onCompletion = { fact in
+            self.updateUI(fact: fact)
         }
     }
 
     @IBAction func getRandomMathAction() {
-        NetworkManager.shared.getFact(typeRequest: .random, typeFactRequest: .math, number: nil) { fact in
-            self.facts = fact
-            DispatchQueue.main.async {
-                self.selectedNumberLabelOutlet.text = String(self.facts.number)
-                self.factTFOutlet.text = self.facts.text
-            }
+        NetworkManagerAF.shared.getFact(typeRequest: .random(typeFactRequest: .math))
+        NetworkManagerAF.shared.onCompletion = { fact in
+            self.updateUI(fact: fact)
         }
     }
 
     @IBAction func getRandomDateAction() {
-        NetworkManager.shared.getFact(typeRequest: .random, typeFactRequest: .year, number: nil) { fact in
-            self.facts = fact
-            DispatchQueue.main.async {
-                self.selectedNumberLabelOutlet.text = String(self.facts.number)
-                self.factTFOutlet.text = self.facts.text
-            }
+        NetworkManagerAF.shared.getFact(typeRequest: .random(typeFactRequest: .year))
+        NetworkManagerAF.shared.onCompletion = { fact in
+            self.updateUI(fact: fact)
         }
     }
 
     @IBAction func getRandomTriviaAction() {
-        NetworkManager.shared.getFact(typeRequest: .random, typeFactRequest: .trivia, number: nil) { fact in
-            self.facts = fact
-            DispatchQueue.main.async {
-                self.selectedNumberLabelOutlet.text = String(self.facts.number)
-                self.factTFOutlet.text = self.facts.text
-            }
+        NetworkManagerAF.shared.getFact(typeRequest: .random(typeFactRequest: .trivia))
+        NetworkManagerAF.shared.onCompletion = { fact in
+            self.updateUI(fact: fact)
+        }
+    }
+
+    func updateUI(fact: Fact) {
+        DispatchQueue.main.async {
+            self.selectedNumberLabelOutlet.text = String(fact.number)
+            self.factTFOutlet.text = fact.text
         }
     }
 }
